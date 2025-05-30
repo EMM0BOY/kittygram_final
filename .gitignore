@@ -150,3 +150,7 @@ media/
 
 # Others
 node_modules
+
+# Git
+.git
+.github
