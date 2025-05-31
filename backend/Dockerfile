@@ -1,11 +1,29 @@
-FROM python:3.10
+FROM python:3.10-slim
 
+# System dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       build-essential \
+       libpq-dev \
+       gettext \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
 WORKDIR /app
 
-COPY requirements.txt .
+# Install Python dependencies
+COPY backend/requirements.txt .
+RUN pip install --upgrade pip \
+    && pip install -r requirements.txt
 
-RUN pip install -r requirements.txt --no-cache-dir
+# Copy project code
+COPY backend /app/backend
 
-COPY . .
+# Collect static files (if any)
+# RUN python backend/manage.py collectstatic --noinput
 
-CMD ["gunicorn", "--bind", "0.0.0.0:9000", "kittygram_backend.wsgi"]
+# Expose port
+EXPOSE 8000
+
+# Run via Gunicorn
+CMD ["gunicorn", "backend.config.wsgi:application", "--bind", "0.0.0.0:8000"]
